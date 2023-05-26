@@ -11,6 +11,7 @@ import {
   Timestamp,
   setDoc,
 } from "firebase/firestore";
+//문서 값 : 번호로 부여를 해서 배열하기 편하게 하도록 임의로 잡아주는 값. 직접 변경을 해야 하므로 const가 아닌 let으로 설정
 let id = 1;
 export default function Home() {
   const [books, setBooks] = useState();
