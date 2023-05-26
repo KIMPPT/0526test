@@ -9,13 +9,14 @@ import {
   query,
   where,
   updateDoc,
+  Timestamp,
 } from "firebase/firestore";
 export default function Home() {
   const [users, setUsers] = useState();
   const [title, setTitle] = useState();
   const [writer, setWriter] = useState();
   const [search, Setsearch] = useState();
-  const [memo, setMemo] = useState("");
+  const [memo, setMemo] = useState();
   const date = new Date();
   const [resultbook, setResultbook] = useState();
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function Home() {
       writer,
       done: false,
       memo: "",
-      startDate: date,
+      startDate: Timestamp.fromDate(date),
     });
     getData();
   };
@@ -58,14 +59,13 @@ export default function Home() {
     });
     setResultbook(dataArray);
   };
-  const writeMemo = () => {
-    let write=prompt("느낀점을 적어주세요");
-     setMemo(write)
-  };
   const updateData = async (id) => {
     await updateDoc(doc(db, "booklist", id), {
-      memo:memo,
+      done: true,
+      memo: prompt("느낀점을 적어주세요"),
+      endDate: date,
     });
+    getData();
   };
   return (
     <div>
@@ -76,6 +76,7 @@ export default function Home() {
       <br />
       <label>작가 이름</label>
       <input type="text" onChange={(e) => setWriter(e.target.value)} />
+      <br />
       <button onClick={addBooklist}>추가</button>
       <hr />
       <input type="text" onChange={(e) => Setsearch(e.target.value)} />
@@ -91,18 +92,30 @@ export default function Home() {
       {users &&
         users.map((x) => (
           <div key={x.id}>
-            <p>
-              {}-{x.title} - {x.writer}
-            </p>
-            <button
-              onClick={() => {
-                writeMemo();
-                console.log(memo)
-                updateData(x.id);
-              }}
-            >
-              감상문 적기
-            </button>
+            <h3>
+              {`${x.startDate.toDate().getMonth() + 1} / ${x.startDate
+                .toDate()
+                .getDate()}`}
+              ~
+              {x.endDate
+                ? `${x.endDate.toDate().getMonth() + 1} / ${x.endDate
+                    .toDate()
+                    .getDate()}`
+                : "읽는 중"}
+            &nbsp;{x.title}
+            </h3>
+            {x.done ? (
+              <p>{x.memo}</p>
+            ) : (
+              <button
+                onClick={() => {
+                  updateData(x.id);
+                }}
+              >
+                감상문 적기
+              </button>
+            )}
+
             <button onClick={() => deletebook(x.id)}>X</button>
           </div>
         ))}
