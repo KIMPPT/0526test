@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { db } from "../database/firebase";
 import {
   collection,
-  addDoc,
   getDocs,
   deleteDoc,
   doc,
@@ -10,11 +9,13 @@ import {
   where,
   updateDoc,
   Timestamp,
+  setDoc,
 } from "firebase/firestore";
+let id = 1;
 export default function Home() {
   const [books, setBooks] = useState();
-  const [title, setTitle] = useState();
-  const [writer, setWriter] = useState();
+  const [title, setTitle] = useState("");
+  const [writer, setWriter] = useState("");
   const [search, Setsearch] = useState();
   const date = new Date();
   const [resultbook, setResultbook] = useState();
@@ -31,15 +32,18 @@ export default function Home() {
       });
     });
     setBooks(dataArray);
+    setTitle("");
+    setWriter("");
   }
   const addBooklist = async () => {
-    const docRef = await addDoc(collection(db, "booklist"), {
+    await setDoc(doc(db, "booklist", id.toString()), {
       title,
       writer,
       done: false,
       memo: "",
       startDate: Timestamp.fromDate(date),
     });
+    id += 1;
     getData();
   };
   const deletebook = async (id) => {
@@ -71,12 +75,25 @@ export default function Home() {
       <h1>readingbooks 컬렉션</h1>
       <h3>책 추가</h3>
       <label>책 이름</label>
-      <input type="text" onChange={(e) => setTitle(e.target.value)} />
+      <input
+        type="text"
+        onChange={(e) => setTitle(e.target.value)}
+        value={title}
+      />
       <br />
       <label>작가 이름</label>
-      <input type="text" onChange={(e) => setWriter(e.target.value)} />
+      <input
+        type="text"
+        onChange={(e) => setWriter(e.target.value)}
+        value={writer}
+      />
       <br />
-      <button onClick={addBooklist}>추가</button>
+      <button
+        onClick={addBooklist}
+        disabled={title === "" || writer === "" ? true : false}
+      >
+        {title === "" || writer === "" ? "책과 작가를 다 입력해주세요" : "추가"}
+      </button>
       <hr />
       <input type="text" onChange={(e) => Setsearch(e.target.value)} />
       <button onClick={searchBook}>읽은 책 검색하기</button>
