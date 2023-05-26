@@ -12,7 +12,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 export default function Home() {
-  const [users, setUsers] = useState();
+  const [books, setBooks] = useState();
   const [title, setTitle] = useState();
   const [writer, setWriter] = useState();
   const [search, Setsearch] = useState();
@@ -31,7 +31,7 @@ export default function Home() {
         ...doc.data(),
       });
     });
-    setUsers(dataArray);
+    setBooks(dataArray);
   }
   const addBooklist = async () => {
     const docRef = await addDoc(collection(db, "booklist"), {
@@ -89,20 +89,21 @@ export default function Home() {
           </div>
         ))}
       <hr />
-      {users &&
-        users.map((x) => (
+      {books &&
+        books.map((x) => (
           <div key={x.id}>
             <h3>
-              {`${x.startDate.toDate().getMonth() + 1} / ${x.startDate
+              {/*console.log(x.startDate.toDate())*/}
+              {`${x.startDate.toDate().getMonth() + 1}/${x.startDate
                 .toDate()
                 .getDate()}`}
               ~
               {x.endDate
-                ? `${x.endDate.toDate().getMonth() + 1} / ${x.endDate
+                ? `${x.endDate.toDate().getMonth() + 1}/${x.endDate
                     .toDate()
                     .getDate()}`
                 : "읽는 중"}
-            &nbsp;{x.title}
+              &nbsp;{x.title}&nbsp;글쓴이 : {x.writer}
             </h3>
             {x.done ? (
               <p>{x.memo}</p>
@@ -115,7 +116,7 @@ export default function Home() {
                 감상문 적기
               </button>
             )}
-
+            &nbsp;
             <button onClick={() => deletebook(x.id)}>X</button>
           </div>
         ))}
