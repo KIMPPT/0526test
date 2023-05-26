@@ -16,7 +16,6 @@ export default function Home() {
   const [title, setTitle] = useState();
   const [writer, setWriter] = useState();
   const [search, Setsearch] = useState();
-  const [memo, setMemo] = useState();
   const date = new Date();
   const [resultbook, setResultbook] = useState();
   useEffect(() => {
