@@ -11,18 +11,26 @@ import {
   Timestamp,
   setDoc,
 } from "firebase/firestore";
+import AddBook from "./AddBook";
 //문서 값 : 번호로 부여를 해서 배열하기 편하게 하도록 임의로 잡아주는 값. 직접 변경을 해야 하므로 const가 아닌 let으로 설정
 let id = 1;
 export default function Home() {
   const [books, setBooks] = useState();
-  const [title, setTitle] = useState("");
-  const [writer, setWriter] = useState("");
+
   const [search, Setsearch] = useState();
   const date = new Date();
   const [resultbook, setResultbook] = useState();
   useEffect(() => {
     getData();
   }, []);
+
+  //return의 값을 출력하기 위한 함수
+  //타임스탬프값을 넣으면 값을 변환해서 문자열로 return 하는 함수
+  const printTime = (date) => {
+    const month = date.toDate().getMonth() + 1;
+    const day = date.toDate().getDate();
+    return `${month}/${day}`;
+  };
   async function getData() {
     const querySnapshot = await getDocs(collection(db, "booklist"));
     let dataArray = [];
@@ -31,22 +39,13 @@ export default function Home() {
         id: doc.id,
         ...doc.data(),
       });
+      //doc.date()객체 확인
+      //doc.date()객체 확인> timestamp는 toDate를 통해 Date 객체로 변환
+      console.dir(doc.data().startDate.toDate());
     });
     setBooks(dataArray);
-    setTitle("");
-    setWriter("");
   }
-  const addBooklist = async () => {
-    await setDoc(doc(db, "booklist", id.toString()), {
-      title,
-      writer,
-      done: false,
-      memo: "",
-      startDate: Timestamp.fromDate(date),
-    });
-    id += 1;
-    getData();
-  };
+
   const deletebook = async (id) => {
     await deleteDoc(doc(db, "booklist", id));
     getData();
@@ -64,9 +63,11 @@ export default function Home() {
     setResultbook(dataArray);
   };
   const updateData = async (id) => {
+    const memo=prompt("느낀점을 적어주세요")
+    if(!memo) return;
     await updateDoc(doc(db, "booklist", id), {
       done: true,
-      memo: prompt("느낀점을 적어주세요"),
+      memo,
       endDate: date,
     });
     getData();
@@ -75,30 +76,7 @@ export default function Home() {
     <div>
       <h1>readingbooks 컬렉션</h1>
       <h3>책 추가</h3>
-      <label>책 이름</label>
-      <input
-        type="text"
-        onChange={(e) => setTitle(e.target.value)}
-        value={title}
-      />
-      <br />
-      <label>작가 이름</label>
-      <input
-        type="text"
-        onChange={(e) => setWriter(e.target.value)}
-        value={writer}
-      />
-      <br />
-      <button
-        onClick={addBooklist}
-        disabled={title === "" || writer === "" ? true : false}
-      >
-        {title === "" || writer === "" ? "책과 작가를 다 입력해주세요" : "추가"}
-        {/*임의로 만들어놓은 조건부. required를 쓸려고 하니 setState에 빈 값이면 동작상에는 오류가 없지만 관리자 모드에서는 오류가 나옴.
-        반대로 setState 오류를 없애기 위해 빈 문자열("")을 넣으면 required가 동작하지 않는다. 서로가 서로를 막는 상황
-        문자가 시작하기 전까지 생성되는 의미없는 빈 공백을 구분하는 식을 당장 만들기에는 조건을 깊게 생각해봐야해서 빈 문자열이 둘 다 없을때만 동작하도록 해놓음
-        */}
-      </button>
+      <AddBook getData={getData} id={id} date={date}/>
       <hr />
       <input type="text" onChange={(e) => Setsearch(e.target.value)} />
       <button onClick={searchBook}>읽은 책 검색하기</button>
@@ -115,10 +93,7 @@ export default function Home() {
           <div key={x.id}>
             <h3>
               {/*console.log(x.startDate.toDate())*/}
-              {`${x.startDate.toDate().getMonth() + 1}/${x.startDate
-                .toDate()
-                .getDate()}`}
-              ~
+              {printTime(x.startDate)}~
               {x.endDate
                 ? `${x.endDate.toDate().getMonth() + 1}/${x.endDate
                     .toDate()
